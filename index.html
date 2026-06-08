@@ -209,18 +209,6 @@ Du coup, cette fameuse vidéo où Ismo vole... les bambous de sa voisine est un 
   video.addEventListener('error', () => {
     alert("Erreur de lecture vidéo.");
   });
-        let redirectionProgrammee = false;
-window.addEventListener('scroll', function() {
-    if (
-        !redirectionProgrammee &&
-        (window.innerHeight + window.scrollY) >= document.body.offsetHeight
-    ) {
-        redirectionProgrammee = true;
-        setTimeout(function() {
-            window.location.href = 'https://www.facebook.com/share/175zzgoHBT/';
-        }, 12000); //
-    }
-});
 </script>
 
 </body>
