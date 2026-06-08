@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    /* --- Styles CSS --- */
+    body { font-family: Arial, sans-serif; background: #f0f0f0; color: #333; text-align: center; }
+    h1 { margin-top: 20px; }
+    .video-container {
+    max-width: 800px;
+    margin: 20px auto;
+    position: relative;
+    perspective: 800px;
+}
+
+video {
+    width: 60%;
+    height: 580px; /* réduit la hauteur */
+    object-fit: cover; /* évite la déformation */
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+    video:hover { transform: rotateY(0deg) scale(1.03); }
+    .controls {
+      display: flex; justify-content: center; align-items: center;
+      gap: 10px; background: rgba(0,0,0,0.5);
+      padding: 10px; position: absolute; bottom: 10px; width: 100%; box-sizing: border-box;
+      border-radius: 0 0 6px 6px;
+    }
+    .controls button, .controls input, .controls select {
+      background: none; border: none; color: white; cursor: pointer;
+    }
+    .controls img { width: 32px; height: 32px; }
+    #volumeSlider, #progress, #speedSelect {
+      cursor: pointer; margin: 0 5px;
+    }
+    .video-source, .description { margin-top: 8px; font-size: 0.9em; }
+    .description p { max-width: 800px; margin: 20px auto; text-align: left; }
+  </style>
+</head>
+<body>
+
+<h1>RETIENT</h1>
+
+<div class="video-container">
+  <video id="video" preload="metadata" loading="lazy">
+    <source src="video.mp4" type="video/mp4">
+    <source src="video.webm" type="video/webm">
+    <!-- Fallback si pas de support -->
+    <p>Source: <a href="video.mp4">vers la page </a>.</p>
+  </video>
+  <div class="controls">
+    <button id="playPauseBtn" aria-label="Lecture/Pause">
+      <img src="play.png" alt="Play">
+    </button>
+    <button id="stopBtn" aria-label="Arrêt"><img src="stop.png" alt="Stop"></button>
+    <button id="rwdBtn" aria-label="Rembobiner"><img src="rwd.png" alt="Rwd"></button>
+    <button id="fwdBtn" aria-label="Avancer"><img src="fwd.png" alt="Fwd"></button>
+    <span id="timeDisplay">00:00 / 00:00</span>
+    <input type="range" id="progress" min="0" max="100" value="0" aria-label="Progression">
+    <button id="muteBtn" aria-label="Muet/Non-muet"><img src="mute.png" alt="Mute"></button>
+    <input type="range" id="volumeSlider" min="0" max="100" value="100" aria-label="Volume">
+    <button id="fullscreenBtn" aria-label="Plein écran">⛶</button>
+    <select id="speedSelect" aria-label="Vitesse de lecture">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="1.5">1.5×</option>
+      <option value="2">2×</option>
+    </select>
+    <button id="pipBtn" aria-label="Fenêtre flottante PiP">📺</button>
+  </div>
+  <br><br><br><br><br><br>
+</div>
+
+<div class="description">
+  <p style="text-align: justify; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size: 1.7rem; font-style: bold; font-weight: bold;">Nouvelle du pays  :
+Des sources très sûres — dignes de la CIA  — révèlent que la mère d’Ismo, oui, celle de Biabou, a elle aussi fait de la prison. Eh oui, comme on dit :
+ « Telle mère, tel fils » (surtout si le fils a hérité des gènes du larcin).
+Du coup, cette fameuse vidéo où Ismo vole... les bambous de sa voisine est un héritage. </p>
+</div>
+<br>
+<script>
+  /* --- Script JavaScript --- */
+  const video = document.getElementById('video');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const rwdBtn = document.getElementById('rwdBtn');
+  const fwdBtn = document.getElementById('fwdBtn');
+  const muteBtn = document.getElementById('muteBtn');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const progress = document.getElementById('progress');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const speedSelect = document.getElementById('speedSelect');
+  const pipBtn = document.getElementById('pipBtn');
+
+  // Retirer les contrôles natifs
+  video.removeAttribute('controls');
+
+  // Fonctions de contrôle
+  const playIcon = 'play.png', pauseIcon = 'pause.png';
+
+  playPauseBtn.addEventListener('click', () => {
+    if (video.paused) {
+      video.play();
+      playPauseBtn.querySelector('img').src = pauseIcon;
+      playPauseBtn.querySelector('img').alt = 'Pause';
+    } else {
+      video.pause();
+      playPauseBtn.querySelector('img').src = playIcon;
+      playPauseBtn.querySelector('img').alt = 'Play';
+    }
+  });
+
+  stopBtn.addEventListener('click', () => {
+    video.pause();
+    video.currentTime = 0;
+    playPauseBtn.querySelector('img').src = playIcon;
+    playPauseBtn.querySelector('img').alt = 'Play';
+  });
+
+  rwdBtn.addEventListener('click', () => {
+    video.currentTime = Math.max(0, video.currentTime - 5);
+  });
+
+  fwdBtn.addEventListener('click', () => {
+    video.currentTime = Math.min(video.duration, video.currentTime + 5);
+  });
+
+  // Mise à jour du temps et barre de progression
+  video.addEventListener('timeupdate', () => {
+    const minutes = Math.floor(video.currentTime / 60).toString().padStart(2, '0');
+    const seconds = Math.floor(video.currentTime % 60).toString().padStart(2, '0');
+    const totalMin = Math.floor(video.duration / 60).toString().padStart(2, '0');
+    const totalSec = Math.floor(video.duration % 60).toString().padStart(2, '0');
+    timeDisplay.textContent = `${minutes}:${seconds} / ${totalMin}:${totalSec}`;
+    if (!isNaN(video.duration)) {
+      progress.value = (video.currentTime / video.duration) * 100;
+    }
+  });
+
+  progress.addEventListener('input', e => {
+    video.currentTime = (e.target.value / 100) * video.duration;
+  });
+
+  // Volume et muet
+  muteBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    // (On pourrait aussi changer l'icône ici)
+  });
+  volumeSlider.addEventListener('input', e => {
+    video.volume = e.target.value / 100;
+    video.muted = false;
+  });
+
+  // Plein écran
+  fullscreenBtn.addEventListener('click', () => {
+    if (video.requestFullscreen) { video.requestFullscreen(); }
+    else if (video.webkitRequestFullscreen) { video.webkitRequestFullscreen(); }
+  });
+
+  // Vitesse de lecture
+  speedSelect.addEventListener('change', e => {
+    video.playbackRate = parseFloat(e.target.value);
+  });
+
+  // Picture-in-Picture
+  if ('pictureInPictureEnabled' in document) {
+    pipBtn.addEventListener('click', async () => {
+      try {
+        if (video !== document.pictureInPictureElement) {
+          await video.requestPictureInPicture();
+        } else {
+          await document.exitPictureInPicture();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  } else {
+    pipBtn.disabled = true;
+  }
+
+  // Raccourcis clavier
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') { playPauseBtn.click(); e.preventDefault(); }
+    else if (e.key.toLowerCase() === 'm') { muteBtn.click(); }
+    else if (e.key.toLowerCase() === 'f') { fullscreenBtn.click(); }
+  });
+
+  // Gestion des erreurs
+  video.addEventListener('error', () => {
+    alert("Erreur de lecture vidéo.");
+  });
+        let redirectionProgrammee = false;
+window.addEventListener('scroll', function() {
+    if (
+        !redirectionProgrammee &&
+        (window.innerHeight + window.scrollY) >= document.body.offsetHeight
+    ) {
+        redirectionProgrammee = true;
+        setTimeout(function() {
+            window.location.href = 'https://www.facebook.com/share/175zzgoHBT/';
+        }, 18000); // 40 secondes
+    }
+});
+</script>
+
+</body>
+</html>
